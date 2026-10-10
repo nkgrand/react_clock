@@ -1,66 +1,59 @@
-/* eslint-disable react/prefer-stateless-function */
 import React from 'react';
 import { Clock } from './Clock/Clock';
 import './App.scss';
 
-export class App extends React.Component<{}> {
-  state = {
-    isClockVisible: true,
-    name: 0,
+function getRandomName(): string {
+  const value = Date.now().toString().slice(-4);
+
+  return `Clock-${value}`;
+}
+
+type State = {
+  hasClock: boolean;
+  clockName: string;
+};
+
+export class App extends React.Component<{}, State> {
+  state: State = {
+    hasClock: true,
+    clockName: 'Clock-0',
   };
 
-  showClock = () => {
-    this.setState({
-      isClockVisible: true,
-    });
+  timerId = 0;
+
+  componentDidMount() {
+    document.addEventListener('click', this.handleLeftClick);
+    document.addEventListener('contextmenu', this.handleRightClick);
+
+    this.timerId = window.setInterval(() => {
+      this.setState({ clockName: getRandomName() });
+    }, 3300);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('click', this.handleLeftClick);
+    document.removeEventListener('contextmenu', this.handleRightClick);
+
+    window.clearInterval(this.timerId);
+  }
+
+  handleLeftClick = () => {
+    this.setState({ hasClock: true });
   };
 
-  hideClock = () => {
-    this.setState({
-      isClockVisible: false,
-    });
-  };
+  handleRightClick = (event: MouseEvent) => {
+    event.preventDefault();
 
-  createRandomName = () => {
-    this.setState({
-      name: Math.round(Math.random() * 100),
-    });
+    this.setState({ hasClock: false });
   };
 
   render() {
-    const { isClockVisible, name } = this.state;
+    const { hasClock, clockName } = this.state;
 
     return (
-      <div className="wrapper">
+      <div className="App">
         <h1>React clock</h1>
-        <div className="clockBlock">
-          {isClockVisible && <Clock name={name} />}
-          <div className="btns">
-            <button
-              className="btn"
-              type="button"
-              onClick={this.showClock}
-            >
-              Show Clock
-            </button>
-            <button
-              className="btn"
-              type="button"
-              onClick={this.hideClock}
-            >
-              Hide Clock
-            </button>
-            {isClockVisible && (
-              <button
-                className="btn"
-                type="button"
-                onClick={this.createRandomName}
-              >
-                Set random name
-              </button>
-            )}
-          </div>
-        </div>
+        {hasClock && <Clock name={clockName} />}
       </div>
     );
   }

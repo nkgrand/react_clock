@@ -1,41 +1,43 @@
 import React from 'react';
 import './Clock.scss';
 
-type State = {
-  time: Date;
+type Props = {
+  name: string;
 };
 
-type Props = {
-  name: number;
+type State = {
+  time: string;
 };
 
 export class Clock extends React.Component<Props, State> {
-  timerId: NodeJS.Timer = setInterval(() => { }, 0);
-
-  state = {
-    time: new Date(),
+  state: State = {
+    time: new Date().toUTCString().slice(-12, -4),
   };
 
-  componentDidMount() {
-    this.timerId = setInterval(() => {
-      this.setState({
-        time: new Date(),
-      });
+  timerId = 0;
 
-      // eslint-disable-next-line
-      console.log(this.state.time.toLocaleTimeString());
+  componentDidMount() {
+    this.timerId = window.setInterval(() => {
+      const time = new Date().toUTCString().slice(-12, -4);
+
+      this.setState({ time });
+
+      // eslint-disable-next-line no-console
+      console.log(time);
     }, 1000);
   }
 
   componentDidUpdate(prevProps: Props) {
-    if (prevProps !== this.props) {
-      // eslint-disable-next-line
-      console.log(`The Clock was renamed from ${prevProps.name} to ${this.props.name}`);
+    const { name } = this.props;
+
+    if (prevProps.name !== name) {
+      // eslint-disable-next-line no-console
+      console.warn(`Renamed from ${prevProps.name} to ${name}`);
     }
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerId);
+    window.clearInterval(this.timerId);
   }
 
   render() {
@@ -43,16 +45,11 @@ export class Clock extends React.Component<Props, State> {
     const { name } = this.props;
 
     return (
-      <>
-        <p className="text">
-          Current time:
-          {' '}
-          <span className="textContent">{time.toLocaleTimeString()}</span>
-          <br />
-          {' '}
-          {name ? `Name is ${name}` : ''}
-        </p>
-      </>
+      <div className="Clock">
+        <strong className="Clock__name">{name}</strong>
+        {' time is '}
+        <span className="Clock__time">{time}</span>
+      </div>
     );
   }
 }
